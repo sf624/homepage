@@ -1,1 +1,178 @@
-<h1>OK</h1>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shun Fujioka</title>
+  <meta name="description" content="Shun Fujioka, software engineer in Tokyo. C++, robotics, developer tools.">
+  <meta property="og:title" content="Shun Fujioka">
+  <meta property="og:description" content="Software Engineer in Tokyo. C++, robotics, developer tools.">
+  <meta property="og:url" content="https://shun-fujioka.com/">
+  <meta property="og:image" content="https://avatars.githubusercontent.com/u/20496673?v=4">
+  <link rel="icon" href="https://avatars.githubusercontent.com/u/20496673?s=64&v=4">
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --surface: #ffffff;
+      --text: #1d1d1f;
+      --muted: #5f6368;
+      --line: #e4e4e0;
+      --accent: #2f6f5e;
+      --accent-soft: #e6f0ec;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141517;
+        --surface: #1c1d20;
+        --text: #e8e8e6;
+        --muted: #a0a3a8;
+        --line: #2e3034;
+        --accent: #7cc4ae;
+        --accent-soft: #1f2e29;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+
+    header.top {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+    header.top .brand { font-weight: 700; color: var(--text); letter-spacing: .01em; }
+    header.top nav { display: flex; gap: 18px; font-size: 14px; }
+    header.top nav a { color: var(--muted); }
+    header.top nav a:hover { color: var(--text); text-decoration: none; }
+
+    .hero { padding: 72px 0 48px; display: flex; gap: 32px; align-items: center; }
+    .hero img { width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--line); flex: none; }
+    .hero h1 { margin: 0; font-size: 34px; line-height: 1.25; letter-spacing: .01em; }
+    .hero .role { margin: 14px 0 0; font-size: 16px; }
+    .hero .meta { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .links a {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px;
+      font-size: 13px; color: var(--text); background: var(--surface);
+    }
+    .links a:hover { border-color: var(--accent); text-decoration: none; }
+    .links svg { width: 15px; height: 15px; fill: currentColor; }
+
+    section { padding: 36px 0; border-top: 1px solid var(--line); }
+    section h2 {
+      margin: 0 0 20px; font-size: 13px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    }
+    .lead { margin: 0; font-size: 16px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; padding: 0; list-style: none; }
+    .tags li { font-size: 12px; padding: 2px 10px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+
+    .featured {
+      display: block; padding: 22px 24px; border: 1px solid var(--line); border-radius: 14px;
+      background: var(--surface); color: var(--text);
+    }
+    .featured:hover { border-color: var(--accent); text-decoration: none; }
+    .featured h3 { margin: 0 0 6px; font-size: 20px; }
+    .featured p { margin: 0; color: var(--muted); font-size: 14.5px; }
+    .featured .where { margin-top: 12px; font-size: 13px; color: var(--muted); }
+
+    .timeline { list-style: none; margin: 0; padding: 0; }
+    .timeline li { display: grid; grid-template-columns: 140px 1fr; gap: 16px; padding: 8px 0; }
+    .timeline .when { color: var(--muted); font-size: 13px; padding-top: 2px; font-variant-numeric: tabular-nums; }
+    .timeline .what strong { display: block; }
+    .timeline .what span { color: var(--muted); font-size: 14px; }
+    .timeline + h3 { margin-top: 28px; }
+    #career h3 { margin: 0 0 8px; font-size: 15px; }
+
+    footer { padding: 32px 0 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 600px) {
+      header.top nav { gap: 12px; font-size: 13px; }
+      .hero { flex-direction: column; align-items: flex-start; gap: 20px; padding: 48px 0 36px; }
+      .hero img { width: 88px; height: 88px; }
+      .hero h1 { font-size: 28px; }
+      .timeline li { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#">Shun Fujioka</a>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#career">Career</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="hero">
+      <img src="https://avatars.githubusercontent.com/u/20496673?s=240&v=4" alt="Shun Fujioka">
+      <div>
+        <h1>Shun Fujioka</h1>
+        <p class="role">Software Engineer</p>
+        <p class="meta">Tokyo, Japan</p>
+        <div class="links">
+          <a href="https://github.com/sf624"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+          <a href="https://zenn.dev/misokatsu6"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.2 14.6h3.1c.2 0 .3-.1.4-.2L10.4 1.7c.1-.2 0-.4-.2-.4H7.3c-.2 0-.3.1-.4.2L1 14.2c-.1.2 0 .4.2.4zm9.4 0h3.4c.2 0 .3-.2.2-.4l-1.7-3.7c-.1-.2-.4-.2-.5 0l-1.6 3.7c-.1.2 0 .4.2.4z"/></svg>Zenn</a>
+          <a href="https://www.linkedin.com/in/shun-fujioka-b42845b8/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M0 1.15C0 .52.53 0 1.18 0h13.64C15.47 0 16 .52 16 1.15v13.7c0 .63-.53 1.15-1.18 1.15H1.18C.53 16 0 15.48 0 14.85V1.15zm4.94 12.24V6.17H2.54v7.22h2.4zM3.74 5.18c.84 0 1.36-.55 1.36-1.25-.02-.71-.52-1.25-1.34-1.25-.82 0-1.36.54-1.36 1.25 0 .7.52 1.25 1.33 1.25h.01zm4.91 8.21V9.36c0-.22.02-.43.08-.59.17-.43.57-.88 1.23-.88.87 0 1.22.66 1.22 1.64v3.86h2.4V9.25c0-2.22-1.18-3.25-2.76-3.25-1.3 0-1.86.72-2.18 1.21v.03h-.01l.01-.03V6.17h-2.4c.03.68 0 7.22 0 7.22h2.41z"/></svg>LinkedIn</a>
+          <a href="https://www.facebook.com/shun.fujioka.16"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M16 8.05A8 8 0 1 0 6.75 15.95v-5.6H4.72V8.05h2.03V6.3c0-2 1.2-3.12 3.02-3.12.88 0 1.8.16 1.8.16v1.97h-1.01c-1 0-1.31.62-1.31 1.26v1.5h2.22l-.35 2.3H9.25v5.6A8 8 0 0 0 16 8.05z"/></svg>Facebook</a>
+        </div>
+      </div>
+    </div>
+
+    <section id="about">
+      <h2>About</h2>
+      <p class="lead">
+        I'm a software engineer in Tokyo. I work at Woven by Toyota as a secondee from Toyota Motor Corporation, where I have worked on advanced vehicle safety systems. Before that, I studied aeronautics and astronautics at the University of Tokyo and built flight control and LiDAR SLAM for drones. I'm interested in how C++ works underneath, in state estimation and optimization for robotics, and in tools for developers.
+      </p>
+      <ul class="tags">
+        <li>C++</li><li>Python</li><li>TypeScript</li><li>Robotics</li><li>SLAM</li><li>State Estimation</li><li>Drones</li><li>Developer Tools</li>
+      </ul>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <a class="featured" href="https://github.com/sf624/bash-explainer">
+        <h3>Bash Explainer</h3>
+        <p>Explains shell scripts line by line, like regex101 for bash. Hover any part of a line to see what it does: every command, option, redirection and <code>${…}</code>, with worked examples you can edit. Offline by design: no network, no AI, no telemetry.</p>
+        <div class="where">VS Code extension · Web page · CLI · Language Server · GitHub Action — TypeScript</div>
+      </a>
+    </section>
+
+    <section id="career">
+      <h2>Career</h2>
+      <h3>Experience</h3>
+      <ul class="timeline">
+        <li><div class="when">Oct 2018 – Present</div><div class="what"><strong>Senior Engineer, Woven by Toyota</strong><span>Software engineer, seconded from Toyota Motor Corporation. Python and C++.</span></div></li>
+        <li><div class="when">Apr 2017 – Present</div><div class="what"><strong>Assistant Manager, Toyota Motor Corporation</strong><span>Development of advanced vehicle safety systems.</span></div></li>
+        <li><div class="when">Jul 2016 – Mar 2017</div><div class="what"><strong>Drone Hardware &amp; Software Engineering, CLUE, Inc.</strong><span>Part-time.</span></div></li>
+      </ul>
+      <h3>Education</h3>
+      <ul class="timeline">
+        <li><div class="when">2015 – 2017</div><div class="what"><strong>Master's degree, The University of Tokyo</strong><span>Department of Aeronautics and Astronautics. Real-time onboard LiDAR-based SLAM on a multicopter.</span></div></li>
+        <li><div class="when">2011 – 2015</div><div class="what"><strong>Bachelor's degree, The University of Tokyo</strong><span>Department of Aeronautics and Astronautics. Semi-autonomous PID tuning for a fixed-wing drone flight controller.</span></div></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">© 2026 Shun Fujioka</div>
+  </footer>
+</body>
+</html>
