@@ -57,8 +57,15 @@
     header.top nav a { color: var(--muted); }
     header.top nav a:hover { color: var(--text); text-decoration: none; }
 
-    .hero { padding: 72px 0 48px; display: flex; gap: 32px; align-items: center; }
-    .hero img { width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--line); flex: none; }
+    .sky { position: relative; height: 200px; background: #0c0f1c; overflow: hidden; }
+    .sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+    .hero { padding: 0 0 48px; display: flex; gap: 28px; align-items: flex-start; }
+    .hero img {
+      width: 128px; height: 128px; margin-top: -64px; flex: none; position: relative;
+      border-radius: 50%; border: 4px solid var(--bg); background: var(--bg);
+    }
+    .hero > div { padding-top: 20px; }
     .hero h1 { margin: 0; font-size: 34px; line-height: 1.25; letter-spacing: .01em; }
     .hero .role { margin: 14px 0 0; font-size: 16px; }
     .hero .meta { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
@@ -101,8 +108,10 @@
 
     @media (max-width: 600px) {
       header.top nav { gap: 12px; font-size: 13px; }
-      .hero { flex-direction: column; align-items: flex-start; gap: 20px; padding: 48px 0 36px; }
-      .hero img { width: 88px; height: 88px; }
+      .sky { height: 150px; }
+      .hero { flex-direction: column; gap: 0; padding-bottom: 36px; }
+      .hero img { width: 96px; height: 96px; margin-top: -48px; }
+      .hero > div { padding-top: 12px; }
       .hero h1 { font-size: 28px; }
       .timeline li { grid-template-columns: 1fr; gap: 0; }
     }
@@ -119,6 +128,8 @@
       </nav>
     </div>
   </header>
+
+  <div class="sky" aria-hidden="true"><canvas></canvas></div>
 
   <main class="wrap">
     <div class="hero">
@@ -174,5 +185,107 @@
   <footer>
     <div class="wrap">© 2026 Shun Fujioka</div>
   </footer>
+  <script>
+    // The banner is a star field seen through a point-mass gravitational lens
+    // that follows the mouse. Each star at angular distance b from the lens
+    // has two images, at (b ± sqrt(b² + 4θE²)) / 2, stretched tangentially by
+    // their magnification; a star right behind the lens becomes a ring.
+    (() => {
+      const sky = document.querySelector('.sky');
+      const canvas = sky.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+      const still = matchMedia('(prefers-reduced-motion: reduce)');
+      let w = 0, h = 0, einstein = 34, stars = [];
+      let lens = null, pointer = null, visible = true, running = false;
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const nw = sky.clientWidth, nh = sky.clientHeight;
+        if (nw === w && nh === h) return;
+        w = nw; h = nh;
+        canvas.width = w * dpr; canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        einstein = h * 0.21;
+        // Stars beyond the edges too: the lens can bend their light into view.
+        const m = einstein * 3;
+        const n = Math.round((w + 2 * m) * (h + 2 * m) / 480);
+        stars = Array.from({ length: n }, () => ({
+          x: -m + Math.random() * (w + 2 * m),
+          y: -m + Math.random() * (h + 2 * m),
+          b: 0.25 + Math.random() * 0.75,
+          s: Math.random() < 0.08 ? 1.8 : 1,
+        }));
+        if (!lens) lens = { x: w * 0.72, y: h * 0.5 };
+        draw();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = '#e9ecff';
+        ctx.lineCap = 'round';
+        for (const star of stars) {
+          const dx = star.x - lens.x, dy = star.y - lens.y;
+          const b = Math.hypot(dx, dy) || 0.01;
+          const ux = dx / b, uy = dy / b, u = b / einstein;
+          const root = Math.sqrt(b * b + 4 * einstein * einstein);
+          const mu = (u * u + 2) / (2 * u * Math.sqrt(u * u + 4));
+          for (const [r, gain] of [[(b + root) / 2, mu + 0.5], [(b - root) / 2, mu - 0.5]]) {
+            if (gain < 0.02) continue;
+            const px = lens.x + ux * r, py = lens.y + uy * r;
+            if (px < -40 || px > w + 40 || py < -40 || py > h + 40) continue;
+            const g = Math.min(gain, 8);
+            const len = Math.min(star.s * g * 1.4, 40) / 2;
+            ctx.globalAlpha = Math.min(1, star.b * (0.35 + g * 0.5));
+            ctx.lineWidth = star.s * 1.2;
+            ctx.beginPath();
+            ctx.moveTo(px + uy * len, py - ux * len);
+            ctx.lineTo(px - uy * len, py + ux * len);
+            ctx.stroke();
+          }
+        }
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#000';
+        ctx.beginPath(); ctx.arc(lens.x, lens.y, einstein * 0.45, 0, 2 * Math.PI); ctx.fill();
+        ctx.strokeStyle = '#f39c3a';
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.arc(lens.x, lens.y, einstein * 0.5, 0, 2 * Math.PI); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // Without a mouse over the banner, the lens drifts slowly on its own.
+      function drift(t) {
+        return { x: w * (0.5 + 0.38 * Math.sin(t / 9000)), y: h * (0.5 + 0.28 * Math.sin(t / 5300)) };
+      }
+
+      function frame(t) {
+        if (!running) return;
+        const target = pointer || drift(t);
+        lens.x += (target.x - lens.x) * 0.15;
+        lens.y += (target.y - lens.y) * 0.15;
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      function update() {
+        const go = visible && !document.hidden && !still.matches;
+        if (go && !running) { running = true; requestAnimationFrame(frame); }
+        if (!go) running = false;
+      }
+
+      sky.addEventListener('pointermove', (e) => {
+        if (e.pointerType !== 'mouse') return;
+        const rect = canvas.getBoundingClientRect();
+        pointer = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      });
+      sky.addEventListener('pointerleave', () => { pointer = null; });
+      new ResizeObserver(resize).observe(sky);
+      new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; update(); }).observe(sky);
+      document.addEventListener('visibilitychange', update);
+      still.addEventListener('change', update);
+      resize();
+      update();
+    })();
+  </script>
 </body>
 </html>
