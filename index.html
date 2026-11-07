@@ -57,7 +57,7 @@
     header.top nav a { color: var(--muted); }
     header.top nav a:hover { color: var(--text); text-decoration: none; }
 
-    .sky { position: relative; height: 200px; background: #0c0f1c; overflow: hidden; }
+    .sky { position: relative; height: 200px; background: #0c0f1c; overflow: hidden; touch-action: none; }
     .sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
     .hero { padding: 0 0 48px; display: flex; gap: 28px; align-items: flex-start; }
@@ -187,9 +187,10 @@
   </footer>
   <script>
     // The banner is a star field seen through a point-mass gravitational lens
-    // that follows the mouse. Each star at angular distance b from the lens
-    // has two images, at (b ± sqrt(b² + 4θE²)) / 2, stretched tangentially by
-    // their magnification; a star right behind the lens becomes a ring.
+    // that follows the mouse, or a finger. Each star at angular distance b from
+    // the lens has two images, at (b ± sqrt(b² + 4θE²)) / 2, stretched
+    // tangentially by their magnification; a star right behind the lens
+    // becomes a ring.
     (() => {
       const sky = document.querySelector('.sky');
       const canvas = sky.querySelector('canvas');
@@ -273,12 +274,32 @@
         if (!go) running = false;
       }
 
-      sky.addEventListener('pointermove', (e) => {
-        if (e.pointerType !== 'mouse') return;
+      function aim(e) {
         const rect = canvas.getBoundingClientRect();
-        pointer = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        pointer = {
+          x: Math.min(Math.max(e.clientX - rect.left, 0), w),
+          y: Math.min(Math.max(e.clientY - rect.top, 0), h),
+        };
+        // With reduced motion there is no animation loop, so jump straight there.
+        if (!running) { lens.x = pointer.x; lens.y = pointer.y; draw(); }
+      }
+
+      // A mouse moves the lens by hovering; a finger or pen by tapping and
+      // dragging. A touched lens stays where it was let go.
+      let dragging = null;
+      sky.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse') return;
+        dragging = e.pointerId;
+        sky.setPointerCapture(e.pointerId);
+        aim(e);
       });
-      sky.addEventListener('pointerleave', () => { pointer = null; });
+      sky.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'mouse' || e.pointerId === dragging) aim(e);
+      });
+      const release = (e) => { if (e.pointerId === dragging) dragging = null; };
+      sky.addEventListener('pointerup', release);
+      sky.addEventListener('pointercancel', release);
+      sky.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') pointer = null; });
       new ResizeObserver(resize).observe(sky);
       new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; update(); }).observe(sky);
       document.addEventListener('visibilitychange', update);
