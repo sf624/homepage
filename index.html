@@ -57,7 +57,7 @@
     header.top nav a { color: var(--muted); }
     header.top nav a:hover { color: var(--text); text-decoration: none; }
 
-    .sky { position: relative; height: 200px; background: #0c0f1c; overflow: hidden; }
+    .sky { position: relative; height: 200px; background: #0c0f1c; overflow: hidden; touch-action: none; }
     .sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
     .hero { padding: 0 0 48px; display: flex; gap: 28px; align-items: flex-start; }
@@ -187,9 +187,10 @@
   </footer>
   <script>
     // The banner is a star field seen through a point-mass gravitational lens
-    // that follows the mouse. Each star at angular distance b from the lens
-    // has two images, at (b ± sqrt(b² + 4θE²)) / 2, stretched tangentially by
-    // their magnification; a star right behind the lens becomes a ring.
+    // that follows the mouse, or a finger. Each star at angular distance b from
+    // the lens has two images, at (b ± sqrt(b² + 4θE²)) / 2, stretched
+    // tangentially by their magnification; a star right behind the lens
+    // becomes a ring.
     (() => {
       const sky = document.querySelector('.sky');
       const canvas = sky.querySelector('canvas');
@@ -197,6 +198,7 @@
       const still = matchMedia('(prefers-reduced-motion: reduce)');
       let w = 0, h = 0, einstein = 34, stars = [];
       let lens = null, pointer = null, visible = true, running = false;
+      let handoff = null;
 
       function resize() {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -253,14 +255,24 @@
         ctx.globalAlpha = 1;
       }
 
-      // Without a mouse over the banner, the lens drifts slowly on its own.
+      // Without a mouse or finger on the banner, the lens drifts slowly on its
+      // own. When let go, it eases from where it was onto the drifting path.
       function drift(t) {
         return { x: w * (0.5 + 0.38 * Math.sin(t / 9000)), y: h * (0.5 + 0.28 * Math.sin(t / 5300)) };
       }
 
       function frame(t) {
         if (!running) return;
-        const target = pointer || drift(t);
+        let target = pointer;
+        if (!target) {
+          target = drift(t);
+          if (handoff) {
+            const k = Math.exp(-(t - handoff.t) / 1200);
+            target.x += handoff.x * k;
+            target.y += handoff.y * k;
+            if (k < 0.001) handoff = null;
+          }
+        }
         lens.x += (target.x - lens.x) * 0.15;
         lens.y += (target.y - lens.y) * 0.15;
         draw();
@@ -273,12 +285,42 @@
         if (!go) running = false;
       }
 
-      sky.addEventListener('pointermove', (e) => {
-        if (e.pointerType !== 'mouse') return;
+      function aim(e) {
         const rect = canvas.getBoundingClientRect();
-        pointer = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        pointer = {
+          x: Math.min(Math.max(e.clientX - rect.left, 0), w),
+          y: Math.min(Math.max(e.clientY - rect.top, 0), h),
+        };
+        // With reduced motion there is no animation loop, so jump straight there.
+        if (!running) { lens.x = pointer.x; lens.y = pointer.y; draw(); }
+      }
+
+      // A mouse moves the lens by hovering; a finger or pen by tapping and
+      // dragging. Either way it goes back to drifting once let go.
+      let dragging = null;
+      sky.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse') return;
+        dragging = e.pointerId;
+        sky.setPointerCapture(e.pointerId);
+        aim(e);
       });
-      sky.addEventListener('pointerleave', () => { pointer = null; });
+      sky.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'mouse' || e.pointerId === dragging) aim(e);
+      });
+      function letGo() {
+        if (!pointer) return;
+        const t = performance.now(), d = drift(t);
+        handoff = { x: lens.x - d.x, y: lens.y - d.y, t };
+        pointer = null;
+      }
+      const release = (e) => {
+        if (e.pointerId !== dragging) return;
+        dragging = null;
+        letGo();
+      };
+      sky.addEventListener('pointerup', release);
+      sky.addEventListener('pointercancel', release);
+      sky.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') letGo(); });
       new ResizeObserver(resize).observe(sky);
       new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; update(); }).observe(sky);
       document.addEventListener('visibilitychange', update);
